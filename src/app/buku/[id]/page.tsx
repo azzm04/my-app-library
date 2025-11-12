@@ -3,12 +3,15 @@ import { useParams, useRouter } from "next/navigation"
 import { ArrowLeft, Heart, Share2, BookOpen } from "lucide-react"
 import { BukuFiksi, BukuNonFiksi } from "@/data/buku"
 import { useFavorites } from "@/app/context/FavoritesContext"
+import { generateShareUrl, copyToClipboard } from "@/app/utils/shareUtils"
+import { useState } from "react"
 
 export default function BookDetailPage() {
   const params = useParams()
   const router = useRouter()
   const bookId = Number(params.id)
   const { isFavorite, addFavorite, removeFavorite } = useFavorites()
+  const [shareMessage, setShareMessage] = useState("")
 
   // Combine both book collections and find the book by ID
   const allBooks = [...BukuFiksi.buku, ...BukuNonFiksi.buku]
@@ -48,6 +51,19 @@ export default function BookDetailPage() {
 
   const handleBacaSekarang = () => {
     window.open(buku.bacaUrl, "_blank")
+  }
+
+  const handleBagikanSekarang = async () => {
+    const shareUrl = generateShareUrl(buku.id)
+    const success = await copyToClipboard(shareUrl)
+
+    if (success) {
+      setShareMessage("Link berhasil disalin!")
+      setTimeout(() => setShareMessage(""), 2000)
+    } else {
+      setShareMessage("Gagal menyalin link")
+      setTimeout(() => setShareMessage(""), 2000)
+    }
   }
 
   return (
@@ -95,6 +111,14 @@ export default function BookDetailPage() {
                   <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
                   Baca Sekarang
                 </button>
+                <button
+                  onClick={handleBagikanSekarang}
+                  className="px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg font-semibold text-sm bg-muted text-foreground hover:bg-muted/80 transition-colors inline-flex items-center justify-center gap-2 border border-border"
+                >
+                  <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                  Bagikan Sekarang
+                </button>
+                {shareMessage && <p className="text-xs text-center text-primary font-semibold">{shareMessage}</p>}
               </div>
             </div>
           </div>
@@ -164,10 +188,14 @@ export default function BookDetailPage() {
                 <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
                 Baca Sekarang
               </button>
-              <button className="px-8 sm:px-9 py-2.5 sm:py-3.5 rounded-lg font-semibold text-sm sm:text-base bg-muted text-foreground hover:bg-muted/80 transition-colors inline-flex items-center gap-2 border border-border">
+              <button
+                onClick={handleBagikanSekarang}
+                className="px-8 sm:px-9 py-2.5 sm:py-3.5 rounded-lg font-semibold text-sm sm:text-base bg-muted text-foreground hover:bg-muted/80 transition-colors inline-flex items-center gap-2 border border-border"
+              >
                 <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                Bagikan
+                Bagikan Sekarang
               </button>
+              {shareMessage && <p className="text-xs text-primary font-semibold col-span-full">{shareMessage}</p>}
             </div>
           </div>
         </div>

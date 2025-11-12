@@ -4,8 +4,10 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Heart, BookOpen } from "lucide-react"
+import { Heart, BookOpen, Share2 } from "lucide-react"
 import { useFavorites } from "./../../app/context/FavoritesContext"
+import { generateShareUrl, copyToClipboard } from "@/app/utils/shareUtils"
+
 
 interface Buku {
   id: number
@@ -26,6 +28,8 @@ export default function BookCard({ buku }: BookCardProps) {
   const { isFavorite, addFavorite, removeFavorite } = useFavorites()
   const router = useRouter()
   const isFav = isFavorite(buku.id)
+  const [shareMessage, setShareMessage] = useState("")
+
 
   const toggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -43,6 +47,20 @@ export default function BookCard({ buku }: BookCardProps) {
   const handleBacaSekarang = (e: React.MouseEvent) => {
     e.stopPropagation()
     window.open(buku.bacaUrl, "_blank")
+  }
+
+  const handleBagikan = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    const shareUrl = generateShareUrl(buku.id)
+    const success = await copyToClipboard(shareUrl)
+
+    if (success) {
+      setShareMessage("Link berhasil disalin!")
+      setTimeout(() => setShareMessage(""), 2000)
+    } else {
+      setShareMessage("Gagal menyalin link")
+      setTimeout(() => setShareMessage(""), 2000)
+    }
   }
 
   return (
@@ -94,13 +112,25 @@ export default function BookCard({ buku }: BookCardProps) {
         >
           Lihat Detail
         </button>
-        <button
-          onClick={handleBacaSekarang}
-          className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-semibold bg-accent text-accent-foreground hover:bg-accent/90 transition-colors duration-300 inline-flex items-center justify-center gap-2"
-        >
-          <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          Baca Sekarang
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleBacaSekarang}
+            className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-semibold bg-accent text-accent-foreground hover:bg-accent/90 transition-colors duration-300 inline-flex items-center justify-center gap-1"
+          >
+            <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            Baca
+          </button>
+          {/* Share Button */}
+          <button
+            onClick={handleBagikan}
+            className="flex-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-semibold bg-muted text-foreground hover:bg-muted/80 transition-colors duration-300 inline-flex items-center justify-center gap-1 border border-border"
+          >
+            <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            Bagikan
+          </button>
+        </div>
+        {/* Share Confirmation Message */}
+        {shareMessage && <p className="text-xs text-center text-primary font-semibold">{shareMessage}</p>}
       </div>
     </div>
   )
