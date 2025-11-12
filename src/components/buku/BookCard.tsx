@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Heart } from "lucide-react"
+import { Heart, BookOpen } from "lucide-react"
 import { useFavorites } from "./../../app/context/FavoritesContext"
 
 interface Buku {
@@ -15,6 +15,7 @@ interface Buku {
   tahun: number
   deskripsi: string
   cover: string
+  bacaUrl?: string
 }
 
 interface BookCardProps {
@@ -37,6 +38,11 @@ export default function BookCard({ buku }: BookCardProps) {
 
   const handleLihatDetail = () => {
     router.push(`/buku/${buku.id}`)
+  }
+  
+  const handleBacaSekarang = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    window.open(buku.bacaUrl, "_blank")
   }
 
   return (
@@ -81,12 +87,19 @@ export default function BookCard({ buku }: BookCardProps) {
       </div>
 
       {/* CTA Button */}
-      <div className="p-4 border-t border-border bg-muted/50">
+      <div className="p-4 border-t border-border bg-muted/50 space-y-2">
         <button
           onClick={handleLihatDetail}
           className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-300"
         >
           Lihat Detail
+        </button>
+        <button
+          onClick={handleBacaSekarang}
+          className="w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-semibold bg-accent text-accent-foreground hover:bg-accent/90 transition-colors duration-300 inline-flex items-center justify-center gap-2"
+        >
+          <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          Baca Sekarang
         </button>
       </div>
     </div>

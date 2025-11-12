@@ -1,6 +1,6 @@
 "use client"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Heart, Download, Share2 } from "lucide-react"
+import { ArrowLeft, Heart, Share2, BookOpen } from "lucide-react"
 import { BukuFiksi, BukuNonFiksi } from "@/data/buku"
 import { useFavorites } from "@/app/context/FavoritesContext"
 
@@ -46,6 +46,10 @@ export default function BookDetailPage() {
     }
   }
 
+  const handleBacaSekarang = () => {
+    window.open(buku.bacaUrl, "_blank")
+  }
+
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       {/* Header with back button */}
@@ -72,10 +76,10 @@ export default function BookDetailPage() {
               </div>
 
               {/* Action buttons for mobile */}
-              <div className="flex gap-3 mt-6 md:hidden">
+              <div className="flex flex-col gap-3 mt-6 md:hidden">
                 <button
                   onClick={toggleFavorite}
-                  className={`flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg font-semibold text-sm transition-all duration-300 inline-flex items-center justify-center gap-2 ${
+                  className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg font-semibold text-sm transition-all duration-300 inline-flex items-center justify-center gap-2 ${
                     bookIsFavorited
                       ? "bg-red-500 text-white hover:bg-red-600"
                       : "bg-muted text-foreground hover:bg-muted/80 border border-border"
@@ -84,9 +88,12 @@ export default function BookDetailPage() {
                   <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${bookIsFavorited ? "fill-current" : ""}`} />
                   {bookIsFavorited ? "Disimpan" : "Simpan"}
                 </button>
-                <button className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg font-semibold text-sm bg-accent text-accent-foreground hover:bg-accent/90 transition-colors inline-flex items-center justify-center gap-2">
-                  <Download className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Baca
+                <button
+                  onClick={handleBacaSekarang}
+                  className="px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg font-semibold text-sm bg-accent text-accent-foreground hover:bg-accent/90 transition-colors inline-flex items-center justify-center gap-2"
+                >
+                  <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
+                  Baca Sekarang
                 </button>
               </div>
             </div>
@@ -138,7 +145,7 @@ export default function BookDetailPage() {
             </div>
 
             {/* Action buttons for desktop */}
-            <div className="hidden md:flex gap-4 sm:gap-5 pt-4 sm:pt-6">
+            <div className="hidden md:flex gap-4 sm:gap-5 pt-4 sm:pt-6 flex-wrap">
               <button
                 onClick={toggleFavorite}
                 className={`px-8 sm:px-9 py-2.5 sm:py-3.5 rounded-lg font-semibold text-sm sm:text-base transition-all duration-300 inline-flex items-center gap-2 border ${
@@ -150,8 +157,11 @@ export default function BookDetailPage() {
                 <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${bookIsFavorited ? "fill-current" : ""}`} />
                 {bookIsFavorited ? "Disimpan" : "Simpan"}
               </button>
-              <button className="px-8 sm:px-9 py-2.5 sm:py-3.5 rounded-lg font-semibold text-sm sm:text-base bg-accent text-accent-foreground hover:bg-accent/90 transition-colors inline-flex items-center gap-2">
-                <Download className="w-4 h-4 sm:w-5 sm:h-5" />
+              <button
+                onClick={handleBacaSekarang}
+                className="px-8 sm:px-9 py-2.5 sm:py-3.5 rounded-lg font-semibold text-sm sm:text-base bg-accent text-accent-foreground hover:bg-accent/90 transition-colors inline-flex items-center gap-2"
+              >
+                <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
                 Baca Sekarang
               </button>
               <button className="px-8 sm:px-9 py-2.5 sm:py-3.5 rounded-lg font-semibold text-sm sm:text-base bg-muted text-foreground hover:bg-muted/80 transition-colors inline-flex items-center gap-2 border border-border">
