@@ -148,7 +148,7 @@ export default function ProfilePage() {
 
           <div className="space-y-4 text-muted-foreground leading-relaxed">
             <p>
-              <strong className="text-foreground">Perpustakaan Digital</strong> adalah aplikasi Progressive Web App
+              <strong className="text-foreground">Book Shelf Management</strong> adalah aplikasi Progressive Web App
               (PWA) yang dibuat sebagai tugas praktikum Pemrograman Berbasis Platform. Aplikasi ini menampilkan koleksi
               buku fiksi dan non-fiksi Indonesia dengan fitur offline yang dapat diinstall di perangkat Anda.
             </p>

@@ -51,7 +51,7 @@ export default function HomePage() {
             {/* Heading */}
             <div className="space-y-3 sm:space-y-4 max-w-2xl">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-balance leading-tight text-foreground tracking-tight">
-                Perpustakaan Digital Anda
+                Book Shelf Management
               </h1>
               <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground leading-relaxed">
                 Jelajahi koleksi buku pilihan dari berbagai genre. Temukan

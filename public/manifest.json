@@ -1,7 +1,7 @@
 {
-  "name": "My App Library",
-  "short_name": "Library",
-  "description": "Aplikasi perpustakaan pribadi Anda",
+  "name": "Book Shelf Management",
+  "short_name": "Book Shelf",
+  "description": "Application Book Shelf Management",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

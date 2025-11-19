@@ -45,7 +45,7 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
 
         <div className="space-y-1 sm:space-y-2">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white text-balance">
-            Perpustakaan Digital
+            Book Shelf Management
           </h1>
           <p className="text-xs sm:text-sm md:text-base text-slate-300">Koleksi Buku Favoritmu</p>
         </div>

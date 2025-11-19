@@ -25,7 +25,7 @@ export default function DesktopNavbar({ currentPage }: DesktopNavbarProps) {
             <div className="bg-primary/10 border border-primary/20 p-2 rounded-lg">
               <BookOpen className="w-6 h-6 text-primary" />
             </div>
-            <span className="text-xl font-bold text-foreground">Perpustakaan Digital</span>
+            <span className="text-xl font-bold text-foreground">Book Shelf Management</span>
           </Link>
 
           {/* Navigation Items */}
