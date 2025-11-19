@@ -84,12 +84,6 @@ export default function NonFiksiClientPage({
       <section className="max-w-6xl mx-auto px-4 md:px-8 py-20 md:py-28">
         {filteredBuku.length > 0 ? (
           <>
-            {/* Sort/Filter info */}
-            <div className="flex items-center justify-between mb-8">
-              <p className="text-sm text-muted-foreground">
-                Menampilkan {filteredBuku.length} buku
-              </p>
-            </div>
 
             {/* Books Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
