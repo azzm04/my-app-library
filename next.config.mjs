@@ -3,31 +3,25 @@ import withPWAInit from '@ducanh2912/next-pwa';
 
 const withPWA = withPWAInit({
   dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
   register: true,
   skipWaiting: true,
-  fallback: {
-    document: "/offline",
-  },
-  workboxOptions: {
-    runtimeCaching: [
-      {
-        urlPattern: /^https?.*/, // Match semua request
-        handler: 'NetworkFirst',
-        options: {
-          cacheName: 'offlineCache',
-          expiration: {
-            maxEntries: 200,
-          },
-        },
-      },
-    ],
+  cacheOnFrontEndNav: true,
+  // ❌ Jangan pakai disable di sini, Vercel sering salah deteksi
+  // ❌ Jangan pakai runtimeCaching custom dulu (bikin conflict App Router)
+  fallbacks: {
+    document: '/offline',
   },
 });
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_BUILD: Date.now(), // fix untuk SW caching update
+  },
   reactStrictMode: true,
+  experimental: {
+    typedRoutes: true,
+  },
 };
 
 export default withPWA(nextConfig);
