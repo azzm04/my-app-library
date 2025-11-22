@@ -1,6 +1,6 @@
-// app/api/buku/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { revalidatePath } from 'next/cache';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -24,7 +24,8 @@ export async function GET() {
         categories (
           id,
           name
-        )
+        ),
+        link_eksternal
       `)
       .order('created_at', { ascending: false });
 
@@ -47,57 +48,64 @@ export async function GET() {
 // POST - Create new book
 export async function POST(request: NextRequest) {
   try {
-    console.log('📚 Create book API called');
-
     const body = await request.json();
-    console.log('📝 Request body:', body);
+    const { judul, penulis, penerbit, tahun, deskripsi, cover, category_name, link_eksternal } = body;
 
-    const { judul, penulis, penerbit, tahun, deskripsi, cover, category_name } = body;
-
-    // Validate required fields
+    // Validasi field wajib
     if (!judul || !penulis || !penerbit || !tahun || !category_name) {
-      console.error('❌ Missing required fields');
       return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
+        { success: false, error: 'Mohon lengkapi field wajib (*)' },
         { status: 400 }
       );
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get category ID by name
-    console.log('🔍 Finding category:', category_name);
-    const { data: category, error: categoryError } = await supabase
+    // 1. LOGIKA KATEGORI (ROBUST)
+    // Cari dulu apakah kategori sudah ada
+    let categoryId;
+    
+    const { data: existingCategory } = await supabase
       .from('categories')
       .select('id')
       .eq('name', category_name)
       .single();
 
-    if (categoryError || !category) {
-      console.error('❌ Category not found:', category_name);
-      return NextResponse.json(
-        { success: false, error: 'Invalid category' },
-        { status: 400 }
-      );
+    if (existingCategory) {
+      // Jika ada, gunakan ID-nya
+      categoryId = existingCategory.id;
+    } else {
+      // Jika tidak ada, BUAT BARU (Ini mencegah error jika kategori baru ditambah di frontend)
+      const { data: newCategory, error: createCatError } = await supabase
+        .from('categories')
+        .insert({ name: category_name })
+        .select()
+        .single();
+      
+      if (createCatError) {
+        console.error('❌ Error creating category:', createCatError);
+        return NextResponse.json(
+          { success: false, error: 'Gagal memproses kategori' },
+          { status: 500 }
+        );
+      }
+      categoryId = newCategory.id;
     }
 
-    console.log('✅ Category found:', category.id);
-
-    // Insert new book
-    console.log('💾 Inserting book...');
+    // 2. Insert Buku Baru
     const { data, error } = await supabase
       .from('books')
-      .insert([
-        {
-          judul,
-          penulis,
-          penerbit,
-          tahun: parseInt(tahun),
-          deskripsi: deskripsi || null,
-          cover: cover || null,
-          category_id: category.id,
-        },
-      ])
+      .insert({
+        judul,
+        penulis,
+        penerbit,
+        tahun: parseInt(tahun),
+        deskripsi: deskripsi || null,
+        cover: cover || null,
+        link_eksternal: link_eksternal || null, // Field Link Eksternal
+        category_id: categoryId,
+        created_at: new Date().toISOString(),
+      })
       .select(`
         id,
         judul,
@@ -110,26 +118,28 @@ export async function POST(request: NextRequest) {
         categories (
           id,
           name
-        )
+        ),
+        link_eksternal
       `)
       .single();
 
-    if (error) {
-      console.error('❌ Insert error:', error);
-      throw error;
-    }
+    if (error) throw error;
 
-    console.log('✅ Book created:', data);
+    // 3. Revalidate Cache
+    revalidatePath('/');
+    revalidatePath('/fiksi');
+    revalidatePath('/nonfiksi');
 
     return NextResponse.json({
       success: true,
-      message: 'Book created successfully',
+      message: 'Buku berhasil ditambahkan',
       data,
     }, { status: 201 });
+
   } catch (error: any) {
     console.error('❌ Create book error:', error);
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: error.message || 'Internal Server Error' },
       { status: 500 }
     );
   }

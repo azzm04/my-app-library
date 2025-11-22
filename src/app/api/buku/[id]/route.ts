@@ -24,6 +24,7 @@ export async function GET(
         deskripsi,
         cover,
         category_id,
+        link_eksternal,  // PENTING: Pastikan ini ada
         categories (
           id,
           name
@@ -62,7 +63,8 @@ export async function PUT(
     console.log('📝 Update book API called for ID:', params.id);
 
     const body = await request.json();
-    const { judul, penulis, penerbit, tahun, deskripsi, cover, category_name } = body;
+    // Ambil link_eksternal dari body
+    const { judul, penulis, penerbit, tahun, deskripsi, cover, category_name, link_eksternal } = body;
 
     // Validate required fields
     if (!judul || !penulis || !penerbit || !tahun) {
@@ -98,6 +100,7 @@ export async function PUT(
         tahun: parseInt(tahun),
         deskripsi: deskripsi || null,
         cover: cover || null,
+        link_eksternal: link_eksternal || null, // PENTING: Masukkan ini ke database
         category_id: category.id,
         updated_at: new Date().toISOString(),
       })

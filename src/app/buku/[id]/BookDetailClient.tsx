@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Heart, Share2, Edit2, Trash2, AlertTriangle, X, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Heart, Share2, Edit2, Trash2, AlertTriangle, X, CheckCircle2, BookOpenText } from "lucide-react";
 import { useFavorites } from "@/app/context/FavoritesContext";
 import type { Buku } from "@/types/buku";
 
@@ -33,7 +33,7 @@ export default function BookDetailClient({
     }
   };
 
-  // Fungsi untuk memunculkan modal (bukan alert browser)
+  // Fungsi untuk memunculkan modal
   const initiateDelete = () => {
     setShowDeleteModal(true);
   };
@@ -48,14 +48,12 @@ export default function BookDetailClient({
 
       if (response.ok) {
         setDeleteSuccess(true);
-        // Tunggu sebentar agar user melihat pesan sukses sebelum redirect
         setTimeout(() => {
           router.refresh(); 
           router.push("/"); 
         }, 1500);
       } else {
         const data = await response.json();
-        // Fallback alert hanya untuk error tak terduga
         alert(data.error || "Gagal menghapus buku"); 
         setIsDeleting(false);
         setShowDeleteModal(false);
@@ -81,7 +79,6 @@ export default function BookDetailClient({
       }
     } else {
       navigator.clipboard.writeText(window.location.href);
-      // Anda bisa mengganti ini dengan toast custom jika mau
       alert("Link berhasil disalin!"); 
     }
   };
@@ -94,7 +91,6 @@ export default function BookDetailClient({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md p-6 space-y-6 animate-in zoom-in-95 duration-200 relative">
             
-            {/* Tombol Close di pojok kanan atas */}
             {!isDeleting && !deleteSuccess && (
               <button 
                 onClick={() => setShowDeleteModal(false)}
@@ -105,7 +101,6 @@ export default function BookDetailClient({
               </button>
             )}
 
-            {/* Content Modal */}
             {!deleteSuccess ? (
               <>
                 <div className="flex flex-col items-center text-center gap-4 pt-2">
@@ -149,7 +144,6 @@ export default function BookDetailClient({
                 </div>
               </>
             ) : (
-              // Tampilan Sukses dalam Modal
               <div className="flex flex-col items-center text-center gap-4 py-6">
                 <div className="p-3 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full animate-in zoom-in duration-300">
                   <CheckCircle2 className="w-10 h-10" />
@@ -195,14 +189,37 @@ export default function BookDetailClient({
                 />
               </div>
 
-              {/* Action buttons for mobile */}
+              {/* --- Action buttons for MOBILE --- */}
               <div className="flex flex-col gap-3 mt-6 md:hidden">
+                
+                {/* 1. Baca Sekarang (Full Width) */}
+                {buku.link_eksternal && (
+                  <a
+                    href={buku.link_eksternal}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full px-3 py-3 rounded-lg font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-md inline-flex items-center justify-center gap-2"
+                  >
+                    <BookOpenText className="w-5 h-5" />
+                    Baca Sekarang
+                  </a>
+                )}
+
+                {/* 2. Row: Bagikan & Simpan */}
                 <div className="flex gap-3">
+                  <button
+                    onClick={handleShare}
+                    className="flex-1 px-3 py-2.5 rounded-lg font-semibold text-sm bg-muted text-foreground hover:bg-muted/80 border border-border transition-all duration-300 inline-flex items-center justify-center gap-2"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    Bagikan
+                  </button>
+
                   <button
                     onClick={toggleFavorite}
                     className={`flex-1 px-3 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 inline-flex items-center justify-center gap-2 ${
                       bookIsFavorited
-                        ? "bg-red-500 text-white hover:bg-red-600"
+                        ? "bg-red-500 text-white hover:bg-red-600 border border-red-500"
                         : "bg-muted text-foreground hover:bg-muted/80 border border-border"
                     }`}
                   >
@@ -213,6 +230,10 @@ export default function BookDetailClient({
                     />
                     {bookIsFavorited ? "Disimpan" : "Simpan"}
                   </button>
+                </div>
+                
+                {/* 3. Row: Edit & Hapus (Khusus Admin/Pemilik) */}
+                <div className="flex gap-3">
                   <button
                     onClick={() => router.push(`/edit-buku/${buku.id}`)}
                     className="flex-1 px-3 py-2.5 rounded-lg font-semibold text-sm bg-accent text-accent-foreground hover:bg-accent/90 transition-colors inline-flex items-center justify-center gap-2"
@@ -220,16 +241,14 @@ export default function BookDetailClient({
                     <Edit2 className="w-4 h-4" />
                     Edit
                   </button>
+                  <button
+                    onClick={initiateDelete}
+                    className="flex-1 px-3 py-2.5 rounded-lg font-semibold text-sm bg-red-100 text-red-600 hover:bg-red-200 border border-red-200 transition-colors inline-flex items-center justify-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Hapus
+                  </button>
                 </div>
-                
-                {/* Delete Button Mobile - Menggunakan initiateDelete */}
-                <button
-                  onClick={initiateDelete}
-                  className="w-full px-3 py-2.5 rounded-lg font-semibold text-sm bg-red-100 text-red-600 hover:bg-red-200 border border-red-200 transition-colors inline-flex items-center justify-center gap-2"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Hapus Buku
-                </button>
               </div>
             </div>
           </div>
@@ -313,8 +332,30 @@ export default function BookDetailClient({
               </div>
             </div>
 
-            {/* Action buttons for desktop */}
-            <div className="hidden md:flex flex-wrap gap-4 sm:gap-5 pt-4 sm:pt-6">
+            {/* --- Action buttons for DESKTOP (RAPID LAYOUT) --- */}
+            <div className="hidden md:flex flex-wrap items-center gap-4 sm:gap-5 pt-4 sm:pt-6">
+              
+              {/* Group 1: Aksi Pembaca (Kiri) */}
+              {buku.link_eksternal && (
+                <a
+                  href={buku.link_eksternal}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-3 rounded-lg font-bold bg-blue-600 text-white hover:bg-blue-700 transition-colors inline-flex items-center gap-2 shadow-md hover:shadow-lg"
+                >
+                  <BookOpenText className="w-5 h-5" />
+                  Baca Sekarang
+                </a>
+              )}
+
+              <button
+                onClick={handleShare}
+                className="px-6 py-3 rounded-lg font-semibold bg-muted text-foreground hover:bg-muted/80 transition-colors inline-flex items-center gap-2 border border-border"
+              >
+                <Share2 className="w-5 h-5" />
+                Bagikan
+              </button>
+
               <button
                 onClick={toggleFavorite}
                 className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 inline-flex items-center gap-2 border ${
@@ -331,30 +372,28 @@ export default function BookDetailClient({
                 {bookIsFavorited ? "Disimpan" : "Simpan"}
               </button>
 
-              <button
-                onClick={() => router.push(`/edit-buku/${buku.id}`)}
-                className="px-6 py-3 rounded-lg font-semibold bg-accent text-accent-foreground hover:bg-accent/90 transition-colors inline-flex items-center gap-2"
-              >
-                <Edit2 className="w-5 h-5" />
-                Edit Buku
-              </button>
+              {/* Spacer jika ingin memisahkan grup admin ke kanan, atau biarkan mengalir */}
+              {/* <div className="flex-1" /> */}
 
-              {/* Delete Button Desktop - Menggunakan initiateDelete */}
-              <button
-                onClick={initiateDelete}
-                className="px-6 py-3 rounded-lg font-semibold bg-red-600 text-white hover:bg-red-700 transition-colors inline-flex items-center gap-2 shadow-sm hover:shadow-md"
-              >
-                <Trash2 className="w-5 h-5" />
-                Hapus
-              </button>
+              {/* Group 2: Aksi Admin (Kanan/Lanjut) */}
+              <div className="flex items-center gap-4 sm:gap-5 ml-auto sm:ml-0">
+                <button
+                  onClick={() => router.push(`/edit-buku/${buku.id}`)}
+                  className="px-6 py-3 rounded-lg font-semibold bg-accent text-accent-foreground hover:bg-accent/90 transition-colors inline-flex items-center gap-2"
+                >
+                  <Edit2 className="w-5 h-5" />
+                  Edit
+                </button>
 
-              <button
-                onClick={handleShare}
-                className="px-6 py-3 rounded-lg font-semibold bg-muted text-foreground hover:bg-muted/80 transition-colors inline-flex items-center gap-2 border border-border"
-              >
-                <Share2 className="w-5 h-5" />
-                Bagikan
-              </button>
+                <button
+                  onClick={initiateDelete}
+                  className="px-6 py-3 rounded-lg font-semibold bg-red-600 text-white hover:bg-red-700 transition-colors inline-flex items-center gap-2 shadow-sm hover:shadow-md"
+                >
+                  <Trash2 className="w-5 h-5" />
+                  Hapus
+                </button>
+              </div>
+
             </div>
           </div>
         </div>

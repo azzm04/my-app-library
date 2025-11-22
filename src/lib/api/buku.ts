@@ -52,6 +52,8 @@ export class BukuAPI {
           deskripsi: book.deskripsi,
           cover: book.cover,
           category_id: book.category_id,
+          // Tambahkan link_eksternal di sini
+          link_eksternal: book.link_eksternal,
           category: category
             ? {
                 id: category.id,
@@ -143,6 +145,8 @@ export class BukuAPI {
         deskripsi: book.deskripsi,
         cover: book.cover,
         category_id: book.category_id,
+        // PENTING: Tambahkan ini agar muncul di halaman edit/detail
+        link_eksternal: book.link_eksternal,
         category: category,
       };
 
@@ -171,7 +175,6 @@ export class BukuAPI {
       if (!booksData) return [];
 
       // Sederhanakan return karena related books biasanya hanya butuh cover/judul
-      // Kita kembalikan sebagai tipe Buku (category opsional di sini)
       return booksData.map(b => ({
         id: b.id,
         judul: b.judul,
@@ -181,6 +184,7 @@ export class BukuAPI {
         deskripsi: b.deskripsi,
         cover: b.cover,
         category_id: b.category_id,
+        link_eksternal: b.link_eksternal,
       })) as Buku[];
 
     } catch (error) {

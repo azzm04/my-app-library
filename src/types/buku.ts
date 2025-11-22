@@ -12,6 +12,7 @@ export interface Buku {
     id: string;
     name: string;
   };
+  link_eksternal?: string | null; 
 }
 
 export interface Category {

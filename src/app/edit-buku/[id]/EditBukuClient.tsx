@@ -2,7 +2,7 @@
 
 import { useState, FormEvent, ChangeEvent, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, CheckCircle, Upload, Image as ImageIcon, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Loader2, CheckCircle, Upload, Image as ImageIcon, CheckCircle2, Link as LinkIcon } from "lucide-react";
 import type { Buku } from "@/types/buku";
 
 interface EditBukuClientProps {
@@ -16,6 +16,7 @@ interface FormData {
   tahun: string;
   deskripsi: string;
   category_name: string;
+  link_eksternal: string; // Field baru
 }
 
 export default function EditBukuClient({ buku }: EditBukuClientProps) {
@@ -29,6 +30,7 @@ export default function EditBukuClient({ buku }: EditBukuClientProps) {
     tahun: buku.tahun.toString(),
     deskripsi: buku.deskripsi || "",
     category_name: buku.category?.name || "Fiksi",
+    link_eksternal: buku.link_eksternal || "", // Inisialisasi dengan data yang ada
   });
 
   const [coverUrl, setCoverUrl] = useState<string>(buku.cover || "");
@@ -135,6 +137,7 @@ export default function EditBukuClient({ buku }: EditBukuClientProps) {
         ...formData,
         tahun: parseInt(formData.tahun),
         cover: coverUrl,
+        link_eksternal: formData.link_eksternal, // Kirim link eksternal
       };
 
       const response = await fetch(`/api/buku/${buku.id}`, {
@@ -165,7 +168,7 @@ export default function EditBukuClient({ buku }: EditBukuClientProps) {
 
   // Fungsi navigasi setelah sukses
   const handleSuccessRedirect = () => {
-    router.refresh(); // Refresh data terbaru agar detail buku update
+    router.refresh(); 
     router.replace(`/buku/${buku.id}`); 
   };
 
@@ -176,20 +179,15 @@ export default function EditBukuClient({ buku }: EditBukuClientProps) {
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-sm p-6 flex flex-col items-center text-center space-y-4 animate-in zoom-in-95 duration-300">
-            {/* Icon Sukses */}
             <div className="p-3 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full animate-bounce duration-1000">
               <CheckCircle2 className="w-10 h-10" />
             </div>
-            
-            {/* Teks */}
             <div className="space-y-2">
               <h3 className="text-xl font-bold text-foreground">Update Berhasil!</h3>
               <p className="text-muted-foreground text-sm">
                 Informasi buku <span className="font-semibold text-foreground">"{formData.judul}"</span> telah berhasil diperbarui.
               </p>
             </div>
-
-            {/* Tombol OK */}
             <button
               onClick={handleSuccessRedirect}
               className="w-full py-2.5 px-4 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg font-semibold transition-all duration-200 shadow-sm mt-2"
@@ -228,7 +226,6 @@ export default function EditBukuClient({ buku }: EditBukuClientProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Error Message */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm animate-in slide-in-from-top-2">
               {error}
@@ -241,26 +238,15 @@ export default function EditBukuClient({ buku }: EditBukuClientProps) {
               Cover Buku
             </label>
             <div className="flex items-start gap-4">
-              {/* Current/Preview Cover */}
               <div className="w-32 h-44 border-2 border-border rounded-lg overflow-hidden bg-muted flex items-center justify-center relative group">
                 {coverPreview ? (
-                  <img
-                    src={coverPreview}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={coverPreview} alt="Preview" className="w-full h-full object-cover" />
                 ) : coverUrl ? (
-                  <img
-                    src={coverUrl}
-                    alt="Current cover"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={coverUrl} alt="Current cover" className="w-full h-full object-cover" />
                 ) : (
                   <ImageIcon className="w-12 h-12 text-muted-foreground" />
                 )}
               </div>
-
-              {/* Upload Button */}
               <div className="flex-1">
                 <input
                   ref={fileInputRef}
@@ -268,7 +254,7 @@ export default function EditBukuClient({ buku }: EditBukuClientProps) {
                   accept="image/jpeg,image/jpg,image/png,image/webp"
                   onChange={handleFileChange}
                   className="hidden"
-                  aria-label="Pilih gambar cover buku"
+                  aria-label="Pilih cover buku"
                 />
                 <button
                   type="button"
@@ -380,6 +366,30 @@ export default function EditBukuClient({ buku }: EditBukuClientProps) {
                   <option value="Non-Fiksi">Non-Fiksi</option>
                 </select>
               </div>
+            </div>
+
+            {/* Link Eksternal (FIELD BARU) */}
+            <div>
+                <label htmlFor="link_eksternal" className="block text-sm font-medium text-foreground mb-2">
+                  Link Baca / Sumber Buku
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <LinkIcon className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <input
+                    id="link_eksternal"
+                    name="link_eksternal"
+                    type="url"
+                    placeholder="https://books.google.com/..."
+                    value={formData.link_eksternal}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 px-4 py-2.5 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-foreground"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Masukkan link ke Google Books, Project Gutenberg, atau toko buku online.
+                </p>
             </div>
 
             {/* Deskripsi */}
