@@ -2,7 +2,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Heart, Download, Share2 } from "lucide-react";
+import { ArrowLeft, Heart, Download, Share2, Edit2 } from "lucide-react";
 import { useFavorites } from "@/app/context/FavoritesContext";
 import type { Buku } from "@/types/buku";
 
@@ -95,9 +95,12 @@ export default function BookDetailClient({
                   />
                   {bookIsFavorited ? "Disimpan" : "Simpan"}
                 </button>
-                <button className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg font-semibold text-sm bg-accent text-accent-foreground hover:bg-accent/90 transition-colors inline-flex items-center justify-center gap-2">
-                  <Download className="w-4 h-4 sm:w-5 sm:h-5" />
-                  Baca
+                <button
+                  onClick={() => router.push(`/edit-buku/${buku.id}`)}
+                  className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg font-semibold text-sm bg-accent text-accent-foreground hover:bg-accent/90 transition-colors inline-flex items-center justify-center gap-2"
+                >
+                  <Edit2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                  Edit
                 </button>
               </div>
             </div>
@@ -199,9 +202,12 @@ export default function BookDetailClient({
                 />
                 {bookIsFavorited ? "Disimpan" : "Simpan"}
               </button>
-              <button className="px-8 sm:px-9 py-2.5 sm:py-3.5 rounded-lg font-semibold text-sm sm:text-base bg-accent text-accent-foreground hover:bg-accent/90 transition-colors inline-flex items-center gap-2">
-                <Download className="w-4 h-4 sm:w-5 sm:h-5" />
-                Baca Sekarang
+              <button
+                onClick={() => router.push(`/edit-buku/${buku.id}`)}
+                className="px-8 sm:px-9 py-2.5 sm:py-3.5 rounded-lg font-semibold text-sm sm:text-base bg-accent text-accent-foreground hover:bg-accent/90 transition-colors inline-flex items-center gap-2"
+              >
+                <Edit2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                Edit Buku
               </button>
               <button
                 onClick={handleShare}
