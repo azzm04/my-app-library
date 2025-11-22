@@ -1,14 +1,21 @@
 "use client"
 
 import { Home, BookOpen, Book, User, Heart, Plus } from "lucide-react"
-import Link from "next/link"
+import Link, { LinkProps } from "next/link" // 1. Import LinkProps
 
 interface DesktopNavbarProps {
   currentPage: string
 }
 
+interface NavItem {
+  id: string
+  label: string
+  icon: any
+  href: LinkProps<any>['href'] 
+}
+
 export default function DesktopNavbar({ currentPage }: DesktopNavbarProps) {
-  const navItems = [
+  const navItems: NavItem[] = [
     { id: "home", label: "Beranda", icon: Home, href: "/" },
     { id: "fiksi", label: "Fiksi", icon: BookOpen, href: "/fiksi" },
     { id: "nonfiksi", label: "Non-Fiksi", icon: Book, href: "/nonfiksi" },
@@ -39,7 +46,7 @@ export default function DesktopNavbar({ currentPage }: DesktopNavbarProps) {
                 return (
                   <Link
                     key={item.id}
-                    href={item.href}
+                    href={item.href} 
                     className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
                       isActive
                         ? "bg-primary text-primary-foreground shadow-md"
@@ -53,7 +60,6 @@ export default function DesktopNavbar({ currentPage }: DesktopNavbarProps) {
               })}
             </div>
 
-            {/* Tambah Buku Button */}
             <Link
               href="/tambah-buku"
               className="flex items-center space-x-2 px-5 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-200 shadow-md hover:shadow-lg font-semibold ml-2"

@@ -1,14 +1,22 @@
 "use client"
 
 import { Home, BookOpen, Book, User, Heart, Plus } from "lucide-react"
-import Link from "next/link"
+import Link, { LinkProps } from "next/link" // 1. Import LinkProps
 
 interface MobileNavbarProps {
   currentPage: string
 }
 
+interface NavItem {
+  id: string
+  label: string
+  icon: any
+  href: LinkProps<any>['href']
+  isSpecial?: boolean
+}
+
 export default function MobileNavbar({ currentPage }: MobileNavbarProps) {
-  const navItems = [
+  const navItems: NavItem[] = [
     { id: "home", label: "Beranda", icon: Home, href: "/" },
     { id: "fiksi", label: "Fiksi", icon: BookOpen, href: "/fiksi" },
     { id: "tambah", label: "Tambah", icon: Plus, href: "/tambah-buku", isSpecial: true },
@@ -23,15 +31,13 @@ export default function MobileNavbar({ currentPage }: MobileNavbarProps) {
           const Icon = item.icon
           const isActive = currentPage === item.id
 
-          // Special styling untuk tombol "Tambah"
           if (item.isSpecial) {
             return (
               <Link
                 key={item.id}
-                href={item.href}
+                href={item.href} 
                 className="flex flex-col items-center justify-center relative"
               >
-                {/* Floating Button dengan efek elevated */}
                 <div className="absolute -top-6 flex flex-col items-center">
                   <div className="bg-primary text-primary-foreground rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95">
                     <Icon className="w-6 h-6 stroke-[2.5]" />
@@ -44,7 +50,6 @@ export default function MobileNavbar({ currentPage }: MobileNavbarProps) {
             )
           }
 
-          // Regular nav items
           return (
             <Link
               key={item.id}
@@ -53,15 +58,12 @@ export default function MobileNavbar({ currentPage }: MobileNavbarProps) {
                 isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {/* Icon with active indicator */}
               <div className={`relative ${isActive ? "transform -translate-y-0.5" : ""}`}>
                 <Icon className={`w-5 h-5 sm:w-6 sm:h-6 ${isActive ? "stroke-[2.5]" : "stroke-2"}`} />
                 {isActive && (
                   <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
                 )}
               </div>
-
-              {/* Label */}
               <span className={`text-xs font-medium ${isActive ? "font-semibold" : ""}`}>
                 {item.label}
               </span>
