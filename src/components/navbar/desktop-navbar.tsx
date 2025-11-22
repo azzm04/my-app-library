@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, BookOpen, Book, User, Heart } from "lucide-react"
+import { Home, BookOpen, Book, User, Heart, Plus } from "lucide-react"
 import Link from "next/link"
 
 interface DesktopNavbarProps {
@@ -28,27 +28,39 @@ export default function DesktopNavbar({ currentPage }: DesktopNavbarProps) {
             <span className="text-xl font-bold text-foreground">Book Shelf Management</span>
           </Link>
 
-          {/* Navigation Items */}
-          <div className="flex space-x-1">
-            {navItems.map((item) => {
-              const Icon = item.icon
-              const isActive = currentPage === item.id
+          {/* Navigation Items + Tambah Buku Button */}
+          <div className="flex items-center gap-2">
+            {/* Navigation Links */}
+            <div className="flex space-x-1">
+              {navItems.map((item) => {
+                const Icon = item.icon
+                const isActive = currentPage === item.id
 
-              return (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-md"
-                      : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              )
-            })}
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="font-medium">{item.label}</span>
+                  </Link>
+                )
+              })}
+            </div>
+
+            {/* Tambah Buku Button */}
+            <Link
+              href="/tambah-buku"
+              className="flex items-center space-x-2 px-5 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-200 shadow-md hover:shadow-lg font-semibold ml-2"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Tambah Buku</span>
+            </Link>
           </div>
         </div>
       </div>
