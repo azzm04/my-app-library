@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { 
   ArrowLeft, Loader2, Upload, Image as ImageIcon, 
   CheckCircle2, Link as LinkIcon, Check, AlertCircle,
-  Save, RotateCcw
+  Save, RotateCcw, AlertTriangle, X
 } from "lucide-react";
 
 interface FormData {
@@ -42,6 +42,10 @@ export default function TambahBukuClient() {
   const [error, setError] = useState<string>("");
   
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  
+  // State untuk Modal Reset
+  const [showResetModal, setShowResetModal] = useState(false);
+
   const [hasDraft, setHasDraft] = useState(false);
   const [showDraftNotification, setShowDraftNotification] = useState(false);
 
@@ -91,22 +95,29 @@ export default function TambahBukuClient() {
     setShowDraftNotification(false);
   };
 
-  // --- RESET FORM ---
-  const handleResetForm = () => {
-    if (confirm("Apakah Anda yakin ingin mereset semua data?")) {
-      setFormData({
-        judul: "",
-        penulis: "",
-        penerbit: "",
-        tahun: new Date().getFullYear().toString(),
-        deskripsi: "",
-        category_name: "Fiksi",
-        link_eksternal: "",
-      });
-      setCoverUrl("");
-      setCoverPreview("");
-      clearDraft();
-    }
+  // --- RESET FORM LOGIC ---
+  // 1. Trigger buka modal
+  const handleResetClick = () => {
+    setShowResetModal(true);
+  };
+
+  // 2. Eksekusi reset data
+  const confirmReset = () => {
+    setFormData({
+      judul: "",
+      penulis: "",
+      penerbit: "",
+      tahun: new Date().getFullYear().toString(),
+      deskripsi: "",
+      category_name: "Fiksi",
+      link_eksternal: "",
+    });
+    setCoverUrl("");
+    setCoverPreview("");
+    clearDraft();
+    
+    // Tutup modal setelah reset
+    setShowResetModal(false);
   };
 
   // --- HANDLERS ---
@@ -235,6 +246,53 @@ export default function TambahBukuClient() {
         </div>
       )}
 
+      {/* --- RESET CONFIRMATION MODAL (MODERN) --- */}
+      {showResetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-sm p-6 relative animate-in zoom-in-95 duration-200">
+            
+            {/* Close Button (X) */}
+            <button 
+              onClick={() => setShowResetModal(false)} 
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="close modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex flex-col items-center text-center gap-4">
+              {/* Icon Peringatan */}
+              <div className="p-3 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-full shadow-sm">
+                <AlertTriangle className="w-8 h-8" />
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-xl font-bold text-foreground">Reset Data?</h3>
+                <p className="text-muted-foreground text-sm">
+                  Apakah Anda yakin ingin menghapus semua data yang telah diisi? Tindakan ini tidak dapat dibatalkan.
+                </p>
+              </div>
+
+              <div className="flex gap-3 w-full mt-2">
+                <button
+                  onClick={() => setShowResetModal(false)}
+                  className="flex-1 px-4 py-2.5 rounded-lg font-semibold text-sm border border-border bg-background hover:bg-muted text-foreground transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={confirmReset}
+                  className="flex-1 px-4 py-2.5 rounded-lg font-semibold text-sm bg-red-600 text-white hover:bg-red-700 transition-colors shadow-sm flex items-center justify-center gap-2"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Ya, Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* --- SUCCESS MODAL --- */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
@@ -294,11 +352,11 @@ export default function TambahBukuClient() {
             </p>
           </div>
 
-          {/* Reset Button */}
+          {/* Reset Button (Opens Modal) */}
           {hasDraft && (
             <button
-              onClick={handleResetForm}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground border border-border rounded-lg hover:bg-accent transition-all"
+              onClick={handleResetClick}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-red-600 border border-border hover:border-red-200 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
               title="Reset Form"
             >
               <RotateCcw className="w-4 h-4" />
