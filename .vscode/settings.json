@@ -10,5 +10,24 @@
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
     "**/node_modules/.pnpm/@vercel+analytics@*/": true
-  }
+  },
+  "cSpell.words": [
+    "buku",
+    "deskripsi",
+    "detik",
+    "eksternal",
+    "Fiksi",
+    "judul",
+    "kosong",
+    "notifikasi",
+    "penerbit",
+    "penulis",
+    "PERUBAHAN",
+    "SAAT",
+    "semua",
+    "setelah",
+    "SETIAP",
+    "tahun",
+    "Tambah"
+  ]
 }

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, FormEvent, ChangeEvent, useRef } from "react";
+import { useState, FormEvent, ChangeEvent, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   ArrowLeft, Loader2, Upload, Image as ImageIcon, 
-  CheckCircle2, Link as LinkIcon, Check, AlertCircle 
+  CheckCircle2, Link as LinkIcon, Check, AlertCircle,
+  Save, RotateCcw
 } from "lucide-react";
 
 interface FormData {
@@ -14,8 +15,10 @@ interface FormData {
   tahun: string;
   deskripsi: string;
   category_name: string;
-  link_eksternal: string; // Field Baru
+  link_eksternal: string;
 }
+
+const DRAFT_KEY = "draft_tambah_buku";
 
 export default function TambahBukuClient() {
   const router = useRouter();
@@ -28,7 +31,7 @@ export default function TambahBukuClient() {
     tahun: new Date().getFullYear().toString(),
     deskripsi: "",
     category_name: "Fiksi",
-    link_eksternal: "", // State Baru
+    link_eksternal: "",
   });
 
   const [coverUrl, setCoverUrl] = useState<string>("");
@@ -38,13 +41,75 @@ export default function TambahBukuClient() {
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [error, setError] = useState<string>("");
   
-  // State untuk modal sukses
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
+  const [showDraftNotification, setShowDraftNotification] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // --- HANDLERS ---
+  // --- LOAD DRAFT SAAT COMPONENT MOUNT ---
+  useEffect(() => {
+    const savedDraft = localStorage.getItem(DRAFT_KEY);
+    if (savedDraft) {
+      try {
+        const draft = JSON.parse(savedDraft);
+        setFormData(draft.formData);
+        setCoverUrl(draft.coverUrl || "");
+        setCoverPreview(draft.coverPreview || "");
+        setHasDraft(true);
+        setShowDraftNotification(true);
+        
+        // Auto-hide notifikasi setelah 5 detik
+        setTimeout(() => setShowDraftNotification(false), 5000);
+      } catch (error) {
+        console.error("Error loading draft:", error);
+      }
+    }
+  }, []);
 
+  // --- AUTO-SAVE DRAFT SETIAP KALI ADA PERUBAHAN ---
+  useEffect(() => {
+    // Jangan save jika semua field kosong
+    const hasContent = formData.judul || formData.penulis || formData.penerbit || formData.deskripsi || formData.link_eksternal || coverUrl;
+    
+    if (hasContent) {
+      const draft = {
+        formData,
+        coverUrl,
+        coverPreview,
+        savedAt: new Date().toISOString(),
+      };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      setHasDraft(true);
+    }
+  }, [formData, coverUrl, coverPreview]);
+
+  // --- HAPUS DRAFT ---
+  const clearDraft = () => {
+    localStorage.removeItem(DRAFT_KEY);
+    setHasDraft(false);
+    setShowDraftNotification(false);
+  };
+
+  // --- RESET FORM ---
+  const handleResetForm = () => {
+    if (confirm("Apakah Anda yakin ingin mereset semua data?")) {
+      setFormData({
+        judul: "",
+        penulis: "",
+        penerbit: "",
+        tahun: new Date().getFullYear().toString(),
+        deskripsi: "",
+        category_name: "Fiksi",
+        link_eksternal: "",
+      });
+      setCoverUrl("");
+      setCoverPreview("");
+      clearDraft();
+    }
+  };
+
+  // --- HANDLERS ---
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -68,14 +133,12 @@ export default function TambahBukuClient() {
       return;
     }
 
-    // Preview lokal langsung
     const reader = new FileReader();
     reader.onloadend = () => {
       setCoverPreview(reader.result as string);
     };
     reader.readAsDataURL(file);
 
-    // Auto-upload
     await uploadCover(file);
   };
 
@@ -98,7 +161,7 @@ export default function TambahBukuClient() {
       setCoverUrl(uploadResult.data.publicUrl);
     } catch (err: any) {
       setError(err.message || "Gagal mengupload cover");
-      setCoverPreview(""); // Reset preview jika gagal
+      setCoverPreview("");
     } finally {
       setIsUploadingCover(false);
     }
@@ -110,7 +173,6 @@ export default function TambahBukuClient() {
     setError("");
 
     try {
-      // Validasi Dasar
       if (!formData.judul || !formData.penulis || !formData.penerbit || !formData.tahun) {
         setError("Mohon lengkapi semua field bertanda bintang (*)");
         setIsSubmitting(false);
@@ -120,11 +182,10 @@ export default function TambahBukuClient() {
       const payload = {
         ...formData,
         tahun: parseInt(formData.tahun),
-        cover: coverUrl, // Bisa string kosong jika user tidak upload
-        link_eksternal: formData.link_eksternal, // Kirim link ke API
+        cover: coverUrl,
+        link_eksternal: formData.link_eksternal,
       };
 
-      // Kirim ke API POST (Create)
       const response = await fetch("/api/buku", { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -136,7 +197,8 @@ export default function TambahBukuClient() {
         throw new Error(data.error || "Gagal menambahkan buku");
       }
 
-      // Tampilkan Modal Sukses (Ganti alert)
+      // Hapus draft setelah berhasil submit
+      clearDraft();
       setShowSuccessModal(true);
 
     } catch (err: any) {
@@ -146,25 +208,41 @@ export default function TambahBukuClient() {
     }
   };
 
-  // Fungsi navigasi setelah sukses
   const handleSuccessRedirect = () => {
     router.refresh();
-    router.push("/"); // Kembali ke Home
+    router.push("/");
   };
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-8">
       
-      {/* --- SUCCESS MODAL (MODERN POPUP) --- */}
+      {/* --- DRAFT NOTIFICATION --- */}
+      {showDraftNotification && (
+        <div className="fixed top-20 right-4 z-50 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg shadow-lg animate-in slide-in-from-right duration-300 max-w-sm">
+          <div className="flex items-start gap-3">
+            <Save className="w-5 h-5 mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <p className="font-semibold text-sm">Draft Ditemukan!</p>
+              <p className="text-xs mt-1">Data form Anda telah dipulihkan dari draft terakhir.</p>
+            </div>
+            <button 
+              onClick={() => setShowDraftNotification(false)}
+              className="text-blue-400 hover:text-blue-600"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* --- SUCCESS MODAL --- */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-sm p-6 flex flex-col items-center text-center space-y-4 animate-in zoom-in-95 duration-300">
-            {/* Ikon Sukses Memantul */}
             <div className="p-3 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full animate-bounce duration-1000">
               <CheckCircle2 className="w-10 h-10" />
             </div>
             
-            {/* Teks Informasi */}
             <div className="space-y-2">
               <h3 className="text-xl font-bold text-foreground">Berhasil Ditambahkan!</h3>
               <p className="text-muted-foreground text-sm">
@@ -172,7 +250,6 @@ export default function TambahBukuClient() {
               </p>
             </div>
 
-            {/* Tombol OK */}
             <button
               onClick={handleSuccessRedirect}
               className="w-full py-2.5 px-4 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg font-semibold transition-all duration-200 shadow-sm mt-2"
@@ -182,11 +259,10 @@ export default function TambahBukuClient() {
           </div>
         </div>
       )}
-      {/* --- END MODAL --- */}
 
       {/* Header Nav */}
       <div className="bg-card border-b border-border/40 sticky top-0 z-40">
-        <div className="max-w-3xl mx-auto px-4 md:px-8 py-4">
+        <div className="max-w-3xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
           <button
             onClick={() => router.back()}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm font-medium"
@@ -194,26 +270,47 @@ export default function TambahBukuClient() {
             <ArrowLeft className="w-4 h-4" />
             Kembali
           </button>
+
+          {/* Auto-Save Indicator */}
+          {hasDraft && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Save className="w-3 h-3" />
+              <span>Draft tersimpan otomatis</span>
+            </div>
+          )}
         </div>
       </div>
 
       <div className="max-w-3xl mx-auto px-4 md:px-8 py-8">
         
         {/* Title Section */}
-        <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-            Tambah Buku Baru
-          </h1>
-          <p className="text-muted-foreground">
-            Bagikan buku favoritmu dengan komunitas
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+              Tambah Buku Baru
+            </h1>
+            <p className="text-muted-foreground">
+              Bagikan buku favoritmu dengan komunitas
+            </p>
+          </div>
+
+          {/* Reset Button */}
+          {hasDraft && (
+            <button
+              onClick={handleResetForm}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground border border-border rounded-lg hover:bg-accent transition-all"
+              title="Reset Form"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Reset
+            </button>
+          )}
         </div>
 
         {/* Stepper Visual */}
         <div className="flex items-center justify-between mb-8 relative">
           <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-border -z-10" />
           
-          {/* Step 1 */}
           <div className="flex items-center gap-2 bg-background pr-4">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${coverUrl ? 'bg-primary text-primary-foreground' : 'bg-primary text-primary-foreground'}`}>
               {coverUrl ? <Check className="w-5 h-5" /> : "1"}
@@ -221,7 +318,6 @@ export default function TambahBukuClient() {
             <span className="text-sm font-medium text-foreground">Upload Cover</span>
           </div>
 
-          {/* Step 2 */}
           <div className="flex items-center gap-2 bg-background pl-4">
             <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
               2
@@ -240,9 +336,8 @@ export default function TambahBukuClient() {
             </div>
           )}
 
-          {/* --- SECTION 1: COVER --- */}
+          {/* Cover Upload Section */}
           {!coverUrl ? (
-            // Tampilan Belum Upload
             <div 
               onClick={() => fileInputRef.current?.click()}
               className="border-2 border-dashed border-border hover:border-primary/50 hover:bg-accent/50 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all group"
@@ -258,7 +353,6 @@ export default function TambahBukuClient() {
               <p className="text-sm text-muted-foreground mt-1">Klik untuk memilih file (Max 5MB)</p>
             </div>
           ) : (
-            // Tampilan SUKSES Upload
             <div className="bg-green-50/50 border border-green-200 rounded-lg p-4 flex items-start gap-4">
               <div className="w-16 h-24 bg-muted rounded overflow-hidden shrink-0 border border-border shadow-sm">
                 <img src={coverPreview || coverUrl} alt="Preview" className="w-full h-full object-cover" />
@@ -281,7 +375,6 @@ export default function TambahBukuClient() {
             </div>
           )}
           
-          {/* Hidden Input */}
           <input
             ref={fileInputRef}
             type="file"
@@ -291,10 +384,9 @@ export default function TambahBukuClient() {
             aria-label="Upload Cover Buku"
           />
 
-          {/* --- SECTION 2: FORM FIELDS --- */}
+          {/* Form Fields */}
           <div className="space-y-5 pt-2">
             
-            {/* Judul */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Judul Buku <span className="text-red-500">*</span>
@@ -308,7 +400,6 @@ export default function TambahBukuClient() {
               />
             </div>
 
-            {/* Penulis */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Penulis <span className="text-red-500">*</span>
@@ -322,7 +413,6 @@ export default function TambahBukuClient() {
               />
             </div>
 
-            {/* Penerbit */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Penerbit <span className="text-red-500">*</span>
@@ -336,7 +426,6 @@ export default function TambahBukuClient() {
               />
             </div>
 
-            {/* Grid Tahun & Kategori */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">
@@ -368,7 +457,6 @@ export default function TambahBukuClient() {
               </div>
             </div>
 
-            {/* --- FIELD BARU: Link Eksternal --- */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Link Baca / Sumber Buku
@@ -391,7 +479,6 @@ export default function TambahBukuClient() {
               </p>
             </div>
 
-            {/* Deskripsi */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Deskripsi
@@ -411,7 +498,6 @@ export default function TambahBukuClient() {
 
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={isSubmitting || isUploadingCover}
