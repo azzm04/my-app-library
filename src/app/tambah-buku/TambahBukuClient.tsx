@@ -274,6 +274,7 @@ export default function TambahBukuClient() {
             <button
               onClick={() => setShowResetModal(false)}
               className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Close Modal"
             >
               <X className="w-5 h-5" />
             </button>
