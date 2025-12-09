@@ -54,7 +54,7 @@ export default function RegisterPage() {
         options: {
           data: {
             name: formData.name,
-            role: "USER", // Default role
+            role: "user", // Default role (lowercase)
           },
         },
       });

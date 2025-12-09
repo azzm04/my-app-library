@@ -38,9 +38,9 @@ export async function checkAdminRole(authHeader: string | null) {
     return { isAdmin: false, error: "Profile not found" };
   }
 
-  // 4. Return true jika role adalah admin
+  // 4. Return true jika role adalah admin (case-insensitive)
   return {
-    isAdmin: profile.role === "admin",
+    isAdmin: profile?.role?.toLowerCase() === "admin",
     user: user,
     error: null,
   };

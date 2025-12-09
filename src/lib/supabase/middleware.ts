@@ -76,7 +76,8 @@ export async function middleware(req: NextRequest) {
       .eq("id", session.user.id)
       .single();
 
-    if (profile?.role !== "ADMIN") {
+    // Normalize role check to be case-insensitive
+    if (profile?.role?.toLowerCase() !== "admin") {
       return NextResponse.redirect(new URL("/", req.url));
     }
   }

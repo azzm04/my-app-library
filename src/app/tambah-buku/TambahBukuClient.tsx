@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, ChangeEvent, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import {
   ArrowLeft,
   Loader2,
@@ -210,6 +211,12 @@ export default function TambahBukuClient() {
         return;
       }
 
+      // Ambil token auth untuk verifikasi di server
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
       const payload = {
         ...formData,
         tahun: parseInt(formData.tahun),
@@ -219,7 +226,10 @@ export default function TambahBukuClient() {
 
       const response = await fetch("/api/buku", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "", // Kirim token
+        },
         body: JSON.stringify(payload),
       });
 

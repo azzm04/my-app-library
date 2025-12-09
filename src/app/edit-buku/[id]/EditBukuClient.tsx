@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, ChangeEvent, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import {
   ArrowLeft,
   Loader2,
@@ -140,6 +141,13 @@ export default function EditBukuClient({ buku }: EditBukuClientProps) {
         return;
       }
 
+      // Ambil token auth untuk verifikasi di server
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
       // Update book
       const bookData = {
         ...formData,
@@ -152,6 +160,7 @@ export default function EditBukuClient({ buku }: EditBukuClientProps) {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "", // Kirim token
         },
         body: JSON.stringify(bookData),
       });
@@ -164,8 +173,12 @@ export default function EditBukuClient({ buku }: EditBukuClientProps) {
       const result = await response.json();
       console.log("✅ Book updated:", result);
 
-      // Tampilkan modal sukses
+      // Tampilkan modal sukses dan auto-redirect ke detail buku
       setShowSuccessModal(true);
+      // Redirect shortly after showing the modal so the user sees feedback
+      setTimeout(() => {
+        handleSuccessRedirect();
+      }, 1500);
     } catch (err: any) {
       setError(err.message || "Terjadi kesalahan");
     } finally {
@@ -175,8 +188,10 @@ export default function EditBukuClient({ buku }: EditBukuClientProps) {
 
   // Fungsi navigasi setelah sukses
   const handleSuccessRedirect = () => {
-    router.refresh();
+    // Navigate to the book detail first
     router.replace(`/buku/${buku.id}`);
+    // Give the router a moment to navigate, then refresh to ensure fresh data
+    setTimeout(() => router.refresh(), 120);
   };
 
   return (
@@ -274,6 +289,7 @@ export default function EditBukuClient({ buku }: EditBukuClientProps) {
                   accept="image/jpeg,image/jpg,image/png,image/webp"
                   onChange={handleFileChange}
                   className="hidden"
+                  aria-label="masukkan gambar"
                 />
                 <button
                   type="button"

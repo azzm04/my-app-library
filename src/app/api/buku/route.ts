@@ -7,7 +7,6 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export async function GET() {
-  // ... (Kode GET biarkan saja, semua orang boleh baca)
   try {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const { data, error } = await supabase

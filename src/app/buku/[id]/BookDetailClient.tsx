@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useFavorites } from "@/app/context/FavoritesContext";
 import { useAdmin } from "@/hooks/useAdmin"; // Import Hook Admin
-import { supabase } from "@/lib/supabase"; // Import Supabase Client
+import { createClient } from "@/lib/supabase/client"; // Use browser supabase client
 import type { Buku } from "@/types/buku";
 
 interface BookDetailClientProps {
@@ -58,6 +58,7 @@ export default function BookDetailClient({
 
     try {
       // Ambil token auth untuk verifikasi di server
+      const supabase = createClient();
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -117,6 +118,7 @@ export default function BookDetailClient({
               <button
                 onClick={() => setShowDeleteModal(false)}
                 className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Close Modal"
               >
                 <X className="w-5 h-5" />
               </button>

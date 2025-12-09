@@ -53,7 +53,8 @@ export default function DesktopNavbar({ currentPage }: DesktopNavbarProps) {
           .eq("id", session.user.id)
           .single();
 
-        setUserRole(profile?.role || null);
+        // Normalize to lowercase for consistent checks
+        setUserRole(profile?.role?.toLowerCase() || null);
       }
       setIsLoading(false);
     };
@@ -70,7 +71,9 @@ export default function DesktopNavbar({ currentPage }: DesktopNavbarProps) {
             .select("role")
             .eq("id", session.user.id)
             .single()
-            .then(({ data }: any) => setUserRole(data?.role || null));
+            .then(({ data }: any) =>
+              setUserRole(data?.role?.toLowerCase() || null)
+            );
         } else {
           setUserRole(null);
         }
@@ -137,7 +140,7 @@ export default function DesktopNavbar({ currentPage }: DesktopNavbarProps) {
             </div>
 
             {/* Tambah Buku Button - Hanya untuk ADMIN */}
-            {userRole === "ADMIN" && (
+            {userRole === "admin" && (
               <Link
                 href="/tambah-buku"
                 className="flex items-center space-x-2 px-5 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all duration-200 shadow-md hover:shadow-lg font-semibold ml-2"
@@ -164,7 +167,7 @@ export default function DesktopNavbar({ currentPage }: DesktopNavbarProps) {
                       {user.user_metadata?.name || "User"}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {userRole === "ADMIN" ? "👑 Admin" : "👤 User"}
+                      {userRole === "admin" ? "👑 Admin" : "👤 User"}
                     </p>
                   </div>
                   <ChevronDown

@@ -49,7 +49,8 @@ export default function MobileNavbar({ currentPage }: MobileNavbarProps) {
           .eq("id", session.user.id)
           .single();
 
-        setUserRole(profile?.role || null);
+        // Normalize to lowercase for consistent checks
+        setUserRole(profile?.role?.toLowerCase() || null);
       }
       setIsLoading(false);
     };
@@ -66,7 +67,7 @@ export default function MobileNavbar({ currentPage }: MobileNavbarProps) {
             .select("role")
             .eq("id", session.user.id)
             .single()
-            .then(({ data }: any) => setUserRole(data?.role || null));
+            .then(({ data }: any) => setUserRole(data?.role?.toLowerCase() || null));
         } else {
           setUserRole(null);
         }
@@ -99,7 +100,7 @@ export default function MobileNavbar({ currentPage }: MobileNavbarProps) {
       isActive: isCollectionActive,
     },
     // Hanya tampilkan tombol Tambah jika user adalah ADMIN
-    ...(userRole === "ADMIN"
+    ...(userRole === "admin"
       ? [
           {
             id: "tambah",
@@ -203,12 +204,12 @@ export default function MobileNavbar({ currentPage }: MobileNavbarProps) {
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                   <span
                     className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
-                      userRole === "ADMIN"
+                      userRole === "admin"
                         ? "bg-primary/10 text-primary"
                         : "bg-muted text-muted-foreground"
                     }`}
                   >
-                    {userRole === "ADMIN" ? "👑 Admin" : "👤 User"}
+                    {userRole === "admin" ? "👑 Admin" : "👤 User"}
                   </span>
                 </div>
               </div>
@@ -222,7 +223,7 @@ export default function MobileNavbar({ currentPage }: MobileNavbarProps) {
               >
                 <User className="w-5 h-5 text-muted-foreground" />
                 <span className="font-medium text-foreground">
-                  Lihat Profil
+                  Tentang Pembuat
                 </span>
               </Link>
 
@@ -242,7 +243,7 @@ export default function MobileNavbar({ currentPage }: MobileNavbarProps) {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border/60 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-50 safe-area-bottom pb-safe">
         <div
           className={`grid ${
-            userRole === "ADMIN" ? "grid-cols-5" : "grid-cols-4"
+            userRole === "admin" ? "grid-cols-5" : "grid-cols-4"
           } h-16 relative`}
         >
           {navItems.map((item) => {
